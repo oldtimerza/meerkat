@@ -1,5 +1,5 @@
 const {
-  app, BrowserWindow, ipcMain, Tray,
+  app, BrowserWindow, ipcMain, Tray, Menu,
 } = require('electron');
 const path = require('path');
 const url = require('url');
@@ -12,7 +12,7 @@ const createWindow = () => {
     width: 300,
     height: 450,
     show: false,
-    frame: false,
+    frame: true,
     fullscreenable: false,
     resizable: false,
     transparent: true,
@@ -55,22 +55,8 @@ const createWindow = () => {
   );
 };
 
-const getWindowPosition = () => {
-  const windowBounds = window.getBounds();
-  const trayBounds = tray.getBounds();
-
-  // Center window horizontally below the tray icon
-  const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2));
-
-  // Position window 4 pixels vertically below the tray icon
-  const y = Math.round(trayBounds.y + trayBounds.height + 4);
-
-  return { x, y };
-};
-
 const showWindow = () => {
-  const position = getWindowPosition();
-  window.setPosition(position.x, position.y, false);
+  window.center();
   window.show();
   window.focus();
 };
@@ -83,19 +69,26 @@ const toggleWindow = () => {
   }
 };
 
+const contextMenu = Menu.buildFromTemplate([
+  {
+    label: 'Show App',
+    click() {
+      window.show();
+    },
+  },
+  {
+    label: 'Quit',
+    click() {
+      app.isQuiting = true;
+      app.quit();
+    },
+  },
+]);
 
 const createTray = () => {
   tray = new Tray(path.join(__dirname, 'icon.png'));
-  tray.on('right-click', toggleWindow);
+  tray.setContextMenu(contextMenu);
   tray.on('double-click', toggleWindow);
-  tray.on('click', (event) => {
-    toggleWindow();
-
-    // Show devtools when command clicked
-    if (window.isVisible() && process.defaultApp && event.metaKey) {
-      window.openDevTools({ mode: 'detach' });
-    }
-  });
 };
 
 app.on('ready', () => {
