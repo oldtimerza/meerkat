@@ -1,0 +1,19 @@
+{
+  "name": "meerkat",
+  "version": "0.0.1",
+  "description": "A simple keyboard controlled , VIM-style , wox-like todo app",
+  "main": "main.js",
+  "repository": "https://github.com/oldtimerza/meerkat.git",
+  "author": "oldtimerza <bradley.morris@crvsh.io>",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "lint": "eslint"
+  },
+  "devDependencies": {
+    "electron": "^6.0.10",
+    "eslint": "^6.4.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2"
+  }
+}
