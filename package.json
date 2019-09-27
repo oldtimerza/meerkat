@@ -7,7 +7,7 @@
   "author": "oldtimerza <bradley.morris@crvsh.io>",
   "license": "MIT",
   "scripts": {
-    "bundle": "gulp ./gulpfile.js",
+    "bundle": "gulp",
     "start": "electron .",
     "lint": "eslint"
   },
