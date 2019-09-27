@@ -1,5 +1,5 @@
 const {
-  app, BrowserWindow, ipcMain, Tray, Menu,
+  app, BrowserWindow, ipcMain, Tray, Menu, globalShortcut,
 } = require('electron');
 const path = require('path');
 const url = require('url');
@@ -94,10 +94,19 @@ const createTray = () => {
 app.on('ready', () => {
   createTray();
   createWindow();
+
+  globalShortcut.register('Alt+Space', () => {
+    toggleWindow();
+  });
 });
 
 app.on('window-all-closed', () => {
   app.quit();
+});
+
+app.on('will-quit', () => {
+  // Unregister all shortcuts.
+  globalShortcut.unregisterAll();
 });
 
 ipcMain.on('show-window', () => {
