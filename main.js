@@ -9,8 +9,8 @@ let window;
 
 const createWindow = () => {
   window = new BrowserWindow({
-    width: 300,
-    height: 450,
+    width: 640,
+    height: 480,
     show: false,
     frame: true,
     fullscreenable: false,

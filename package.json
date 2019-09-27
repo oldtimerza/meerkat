@@ -7,6 +7,7 @@
   "author": "oldtimerza <bradley.morris@crvsh.io>",
   "license": "MIT",
   "scripts": {
+    "bundle": "browserify app.js > bundle.js",
     "start": "electron .",
     "lint": "eslint"
   },
