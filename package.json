@@ -7,16 +7,30 @@
   "author": "oldtimerza <bradley.morris@crvsh.io>",
   "license": "MIT",
   "scripts": {
-    "bundle": "browserify -t [ sveltify --extensions [.htmlz .svelte] ] app.js > bundle.js",
+    "bundle": "gulp ./gulpfile.js",
     "start": "electron .",
     "lint": "eslint"
   },
   "devDependencies": {
+    "@babel/core": "^7.6.2",
+    "@babel/preset-env": "^7.6.2",
+    "babel-cli": "^6.26.0",
+    "babelify": "^10.0.0",
+    "browserify": "^16.5.0",
     "electron": "^6.0.10",
     "eslint": "^6.4.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-concat": "^2.6.1",
     "svelte": "3",
-    "sveltify": "3"
+    "sveltify": "3",
+    "vinyl-source-stream": "^2.0.0"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
   }
 }

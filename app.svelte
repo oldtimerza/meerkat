@@ -1,30 +1,67 @@
 <script>
     const Mousetrap = require('./mousetrap.min.js');
-    // single keys
-    Mousetrap.bind('4', () => { console.log('4'); });
-    Mousetrap.bind('?', () => { console.log('show shortcuts!'); });
-    Mousetrap.bind('esc', () => { console.log('escape'); }, 'keyup');
 
-    // combinations
-    Mousetrap.bind('command+shift+k', () => { console.log('command shift k'); });
+    //handle the VIM style modes
+    const modes = {
+        NAVIGATE: "NAVIGATE",
+        EDIT: "EDIT",
+        INSERT: "INSERT"
+    }
 
-    // map multiple combinations to the same callback
-    Mousetrap.bind(['command+k', 'ctrl+k'], () => {
-    console.log('command k or control k');
+    let currentMode = modes.NAVIGATE
 
-    // return false to prevent default browser behavior
-    // and stop event from bubbling
-    return false;
-    });
+    let insertText = ""
 
-    // gmail style sequences
-    Mousetrap.bind('g i', () => { console.log('go to inbox'); });
-    Mousetrap.bind('* a', () => { console.log('select all'); });
+    let todos = [{id: 0, done: false, text: "Get meerkat working"}]
 
-    // konami code!
-    Mousetrap.bind('up up down down left right left right b a enter', () => {
-    console.log('konami code');
-    });
+    function changeMode(newMode){
+        currentMode = newMode
+    }
+
+    function determineActionFromMode(doInNav, doInEdit, doInInsert){
+        if(currentMode == modes.NAVIGATE){
+            doInNav()
+        }
+
+        if(currentMode == modes.EDIT){
+            doInEdit()
+        }
+
+        if(currentMode == modes.INSERT){
+            doInInsert()
+        }
+    }
+
+    //actions
+    function enterInsertMode(){
+        
+        changeMode(modes.INSERT)
+    }
+
+    function insertTodo(){
+        todos = [...todos, {id: 0, done: false, text: insertText}]
+        insertText = ""
+        changeMode(modes.NAVIGATE)
+    }
+
+
+    //key bindings
+    Mousetrap.bind('i', 
+    determineActionFromMode(
+        () => changeMode(modes.INSERT),
+        () => {},
+        () => {}
+    )
+   );
 </script>
 
 <h1>Welcome to meerkat - the simple VIM inspired todo maker</h1>
+
+<input type="text" bind:value={insertText} onsubmit={insertTodo}/>
+
+{#each todos as todo}
+    <li>
+        <input class="toggle" type="checkbox" checked="{todo.done}" />
+        <p>{todo.text}</p>
+    </li>
+{/each}

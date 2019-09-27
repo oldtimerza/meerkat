@@ -1,10 +1,13 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const App = require('./app.svelte');
+"use strict";
 
-const app = new App({
-  target: document.body,
+var _app = _interopRequireDefault(require("./app.svelte"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var app = new _app["default"]({
+  target: document.body
 });
-
 module.exports = app;
 
 },{"./app.svelte":2}],2:[function(require,module,exports){
@@ -13,68 +16,233 @@ module.exports = app;
 
 const {
 	SvelteComponent,
+	append,
+	attr,
+	destroy_each,
 	detach,
 	element,
+	empty,
 	init,
 	insert,
+	listen,
 	noop,
-	safe_not_equal
+	safe_not_equal,
+	set_data,
+	set_input_value,
+	space,
+	text
 } = require("svelte/internal");
 
+function get_each_context(ctx, list, i) {
+	const child_ctx = Object.create(ctx);
+	child_ctx.todo = list[i];
+	return child_ctx;
+}
+
+// (62:0) {#each todos as todo}
+function create_each_block(ctx) {
+	var li, input, input_checked_value, t0, p, t1_value = ctx.todo.text + "", t1, t2;
+
+	return {
+		c() {
+			li = element("li");
+			input = element("input");
+			t0 = space();
+			p = element("p");
+			t1 = text(t1_value);
+			t2 = space();
+			attr(input, "class", "toggle");
+			attr(input, "type", "checkbox");
+			input.checked = input_checked_value = ctx.todo.done;
+		},
+
+		m(target, anchor) {
+			insert(target, li, anchor);
+			append(li, input);
+			append(li, t0);
+			append(li, p);
+			append(p, t1);
+			append(li, t2);
+		},
+
+		p(changed, ctx) {
+			if ((changed.todos) && input_checked_value !== (input_checked_value = ctx.todo.done)) {
+				input.checked = input_checked_value;
+			}
+
+			if ((changed.todos) && t1_value !== (t1_value = ctx.todo.text + "")) {
+				set_data(t1, t1_value);
+			}
+		},
+
+		d(detaching) {
+			if (detaching) {
+				detach(li);
+			}
+		}
+	};
+}
+
 function create_fragment(ctx) {
-	var h1;
+	var h1, t1, input, t2, each_1_anchor, dispose;
+
+	let each_value = ctx.todos;
+
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value.length; i += 1) {
+		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+	}
 
 	return {
 		c() {
 			h1 = element("h1");
 			h1.textContent = "Welcome to meerkat - the simple VIM inspired todo maker";
+			t1 = space();
+			input = element("input");
+			t2 = space();
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			each_1_anchor = empty();
+			attr(input, "type", "text");
+			attr(input, "onsubmit", ctx.insertTodo);
+			dispose = listen(input, "input", ctx.input_input_handler);
 		},
 
 		m(target, anchor) {
 			insert(target, h1, anchor);
+			insert(target, t1, anchor);
+			insert(target, input, anchor);
+
+			set_input_value(input, ctx.insertText);
+
+			insert(target, t2, anchor);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(target, anchor);
+			}
+
+			insert(target, each_1_anchor, anchor);
 		},
 
-		p: noop,
+		p(changed, ctx) {
+			if (changed.insertText && (input.value !== ctx.insertText)) set_input_value(input, ctx.insertText);
+
+			if (changed.todos) {
+				each_value = ctx.todos;
+
+				let i;
+				for (i = 0; i < each_value.length; i += 1) {
+					const child_ctx = get_each_context(ctx, each_value, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(changed, child_ctx);
+					} else {
+						each_blocks[i] = create_each_block(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+				each_blocks.length = each_value.length;
+			}
+		},
+
 		i: noop,
 		o: noop,
 
 		d(detaching) {
 			if (detaching) {
 				detach(h1);
+				detach(t1);
+				detach(input);
+				detach(t2);
 			}
+
+			destroy_each(each_blocks, detaching);
+
+			if (detaching) {
+				detach(each_1_anchor);
+			}
+
+			dispose();
 		}
 	};
 }
 
-function instance($$self) {
+function instance($$self, $$props, $$invalidate) {
 	const Mousetrap = require('./mousetrap.min.js');
-    // single keys
-    Mousetrap.bind('4', () => { console.log('4'); });
-    Mousetrap.bind('?', () => { console.log('show shortcuts!'); });
-    Mousetrap.bind('esc', () => { console.log('escape'); }, 'keyup');
 
-    // combinations
-    Mousetrap.bind('command+shift+k', () => { console.log('command shift k'); });
+    //handle the VIM style modes
+    const modes = {
+        NAVIGATE: "NAVIGATE",
+        EDIT: "EDIT",
+        INSERT: "INSERT"
+    }
 
-    // map multiple combinations to the same callback
-    Mousetrap.bind(['command+k', 'ctrl+k'], () => {
-    console.log('command k or control k');
+    let currentMode = modes.NAVIGATE
 
-    // return false to prevent default browser behavior
-    // and stop event from bubbling
-    return false;
-    });
+    let insertText = ""
 
-    // gmail style sequences
-    Mousetrap.bind('g i', () => { console.log('go to inbox'); });
-    Mousetrap.bind('* a', () => { console.log('select all'); });
+    let todos = [{id: 0, done: false, text: "Get meerkat working"}]
 
-    // konami code!
-    Mousetrap.bind('up up down down left right left right b a enter', () => {
-    console.log('konami code');
-    });
+    function changeMode(newMode){
+        currentMode = newMode
+    }
 
-	return {};
+    function determineActionFromMode(doInNav, doInEdit, doInInsert){
+        if(currentMode == modes.NAVIGATE){
+            doInNav()
+        }
+
+        if(currentMode == modes.EDIT){
+            doInEdit()
+        }
+
+        if(currentMode == modes.INSERT){
+            doInInsert()
+        }
+    }
+
+    //actions
+    function enterInsertMode(){
+        
+        changeMode(modes.INSERT)
+    }
+
+    function insertTodo(){
+        $$invalidate('todos', todos = [...todos, {id: 0, done: false, text: insertText}])
+        $$invalidate('insertText', insertText = "")
+        changeMode(modes.NAVIGATE)
+    }
+
+
+    //key bindings
+    Mousetrap.bind('i', 
+    determineActionFromMode(
+        () => changeMode(modes.INSERT),
+        () => {},
+        () => {}
+    )
+   );
+
+	function input_input_handler() {
+		insertText = this.value;
+		$$invalidate('insertText', insertText);
+	}
+
+	return {
+		insertText,
+		todos,
+		insertTodo,
+		input_input_handler
+	};
 }
 
 class App extends SvelteComponent {
@@ -87,17 +255,351 @@ class App extends SvelteComponent {
 module.exports = App;
 
 },{"./mousetrap.min.js":3,"svelte/internal":4}],3:[function(require,module,exports){
+"use strict";
+
 /* mousetrap v1.6.3 craig.is/killing/mice */
-(function(q,u,c){function v(a,b,g){a.addEventListener?a.addEventListener(b,g,!1):a.attachEvent("on"+b,g)}function z(a){if("keypress"==a.type){var b=String.fromCharCode(a.which);a.shiftKey||(b=b.toLowerCase());return b}return n[a.which]?n[a.which]:r[a.which]?r[a.which]:String.fromCharCode(a.which).toLowerCase()}function F(a){var b=[];a.shiftKey&&b.push("shift");a.altKey&&b.push("alt");a.ctrlKey&&b.push("ctrl");a.metaKey&&b.push("meta");return b}function w(a){return"shift"==a||"ctrl"==a||"alt"==a||
-"meta"==a}function A(a,b){var g,d=[];var e=a;"+"===e?e=["+"]:(e=e.replace(/\+{2}/g,"+plus"),e=e.split("+"));for(g=0;g<e.length;++g){var m=e[g];B[m]&&(m=B[m]);b&&"keypress"!=b&&C[m]&&(m=C[m],d.push("shift"));w(m)&&d.push(m)}e=m;g=b;if(!g){if(!p){p={};for(var c in n)95<c&&112>c||n.hasOwnProperty(c)&&(p[n[c]]=c)}g=p[e]?"keydown":"keypress"}"keypress"==g&&d.length&&(g="keydown");return{key:m,modifiers:d,action:g}}function D(a,b){return null===a||a===u?!1:a===b?!0:D(a.parentNode,b)}function d(a){function b(a){a=
-a||{};var b=!1,l;for(l in p)a[l]?b=!0:p[l]=0;b||(x=!1)}function g(a,b,t,f,g,d){var l,E=[],h=t.type;if(!k._callbacks[a])return[];"keyup"==h&&w(a)&&(b=[a]);for(l=0;l<k._callbacks[a].length;++l){var c=k._callbacks[a][l];if((f||!c.seq||p[c.seq]==c.level)&&h==c.action){var e;(e="keypress"==h&&!t.metaKey&&!t.ctrlKey)||(e=c.modifiers,e=b.sort().join(",")===e.sort().join(","));e&&(e=f&&c.seq==f&&c.level==d,(!f&&c.combo==g||e)&&k._callbacks[a].splice(l,1),E.push(c))}}return E}function c(a,b,c,f){k.stopCallback(b,
-b.target||b.srcElement,c,f)||!1!==a(b,c)||(b.preventDefault?b.preventDefault():b.returnValue=!1,b.stopPropagation?b.stopPropagation():b.cancelBubble=!0)}function e(a){"number"!==typeof a.which&&(a.which=a.keyCode);var b=z(a);b&&("keyup"==a.type&&y===b?y=!1:k.handleKey(b,F(a),a))}function m(a,g,t,f){function h(c){return function(){x=c;++p[a];clearTimeout(q);q=setTimeout(b,1E3)}}function l(g){c(t,g,a);"keyup"!==f&&(y=z(g));setTimeout(b,10)}for(var d=p[a]=0;d<g.length;++d){var e=d+1===g.length?l:h(f||
-A(g[d+1]).action);n(g[d],e,f,a,d)}}function n(a,b,c,f,d){k._directMap[a+":"+c]=b;a=a.replace(/\s+/g," ");var e=a.split(" ");1<e.length?m(a,e,b,c):(c=A(a,c),k._callbacks[c.key]=k._callbacks[c.key]||[],g(c.key,c.modifiers,{type:c.action},f,a,d),k._callbacks[c.key][f?"unshift":"push"]({callback:b,modifiers:c.modifiers,action:c.action,seq:f,level:d,combo:a}))}var k=this;a=a||u;if(!(k instanceof d))return new d(a);k.target=a;k._callbacks={};k._directMap={};var p={},q,y=!1,r=!1,x=!1;k._handleKey=function(a,
-d,e){var f=g(a,d,e),h;d={};var k=0,l=!1;for(h=0;h<f.length;++h)f[h].seq&&(k=Math.max(k,f[h].level));for(h=0;h<f.length;++h)f[h].seq?f[h].level==k&&(l=!0,d[f[h].seq]=1,c(f[h].callback,e,f[h].combo,f[h].seq)):l||c(f[h].callback,e,f[h].combo);f="keypress"==e.type&&r;e.type!=x||w(a)||f||b(d);r=l&&"keydown"==e.type};k._bindMultiple=function(a,b,c){for(var d=0;d<a.length;++d)n(a[d],b,c)};v(a,"keypress",e);v(a,"keydown",e);v(a,"keyup",e)}if(q){var n={8:"backspace",9:"tab",13:"enter",16:"shift",17:"ctrl",
-18:"alt",20:"capslock",27:"esc",32:"space",33:"pageup",34:"pagedown",35:"end",36:"home",37:"left",38:"up",39:"right",40:"down",45:"ins",46:"del",91:"meta",93:"meta",224:"meta"},r={106:"*",107:"+",109:"-",110:".",111:"/",186:";",187:"=",188:",",189:"-",190:".",191:"/",192:"`",219:"[",220:"\\",221:"]",222:"'"},C={"~":"`","!":"1","@":"2","#":"3",$:"4","%":"5","^":"6","&":"7","*":"8","(":"9",")":"0",_:"-","+":"=",":":";",'"':"'","<":",",">":".","?":"/","|":"\\"},B={option:"alt",command:"meta","return":"enter",
-escape:"esc",plus:"+",mod:/Mac|iPod|iPhone|iPad/.test(navigator.platform)?"meta":"ctrl"},p;for(c=1;20>c;++c)n[111+c]="f"+c;for(c=0;9>=c;++c)n[c+96]=c.toString();d.prototype.bind=function(a,b,c){a=a instanceof Array?a:[a];this._bindMultiple.call(this,a,b,c);return this};d.prototype.unbind=function(a,b){return this.bind.call(this,a,function(){},b)};d.prototype.trigger=function(a,b){if(this._directMap[a+":"+b])this._directMap[a+":"+b]({},a);return this};d.prototype.reset=function(){this._callbacks={};
-this._directMap={};return this};d.prototype.stopCallback=function(a,b){if(-1<(" "+b.className+" ").indexOf(" mousetrap ")||D(b,this.target))return!1;if("composedPath"in a&&"function"===typeof a.composedPath){var c=a.composedPath()[0];c!==a.target&&(b=c)}return"INPUT"==b.tagName||"SELECT"==b.tagName||"TEXTAREA"==b.tagName||b.isContentEditable};d.prototype.handleKey=function(){return this._handleKey.apply(this,arguments)};d.addKeycodes=function(a){for(var b in a)a.hasOwnProperty(b)&&(n[b]=a[b]);p=null};
-d.init=function(){var a=d(u),b;for(b in a)"_"!==b.charAt(0)&&(d[b]=function(b){return function(){return a[b].apply(a,arguments)}}(b))};d.init();q.Mousetrap=d;"undefined"!==typeof module&&module.exports&&(module.exports=d);"function"===typeof define&&define.amd&&define(function(){return d})}})("undefined"!==typeof window?window:null,"undefined"!==typeof window?document:null);
+(function (q, u, c) {
+  function v(a, b, g) {
+    a.addEventListener ? a.addEventListener(b, g, !1) : a.attachEvent("on" + b, g);
+  }
+
+  function z(a) {
+    if ("keypress" == a.type) {
+      var b = String.fromCharCode(a.which);
+      a.shiftKey || (b = b.toLowerCase());
+      return b;
+    }
+
+    return n[a.which] ? n[a.which] : r[a.which] ? r[a.which] : String.fromCharCode(a.which).toLowerCase();
+  }
+
+  function F(a) {
+    var b = [];
+    a.shiftKey && b.push("shift");
+    a.altKey && b.push("alt");
+    a.ctrlKey && b.push("ctrl");
+    a.metaKey && b.push("meta");
+    return b;
+  }
+
+  function w(a) {
+    return "shift" == a || "ctrl" == a || "alt" == a || "meta" == a;
+  }
+
+  function A(a, b) {
+    var g,
+        d = [];
+    var e = a;
+    "+" === e ? e = ["+"] : (e = e.replace(/\+{2}/g, "+plus"), e = e.split("+"));
+
+    for (g = 0; g < e.length; ++g) {
+      var m = e[g];
+      B[m] && (m = B[m]);
+      b && "keypress" != b && C[m] && (m = C[m], d.push("shift"));
+      w(m) && d.push(m);
+    }
+
+    e = m;
+    g = b;
+
+    if (!g) {
+      if (!p) {
+        p = {};
+
+        for (var c in n) {
+          95 < c && 112 > c || n.hasOwnProperty(c) && (p[n[c]] = c);
+        }
+      }
+
+      g = p[e] ? "keydown" : "keypress";
+    }
+
+    "keypress" == g && d.length && (g = "keydown");
+    return {
+      key: m,
+      modifiers: d,
+      action: g
+    };
+  }
+
+  function D(a, b) {
+    return null === a || a === u ? !1 : a === b ? !0 : D(a.parentNode, b);
+  }
+
+  function d(a) {
+    function b(a) {
+      a = a || {};
+      var b = !1,
+          l;
+
+      for (l in p) {
+        a[l] ? b = !0 : p[l] = 0;
+      }
+
+      b || (x = !1);
+    }
+
+    function g(a, b, t, f, g, d) {
+      var l,
+          E = [],
+          h = t.type;
+      if (!k._callbacks[a]) return [];
+      "keyup" == h && w(a) && (b = [a]);
+
+      for (l = 0; l < k._callbacks[a].length; ++l) {
+        var c = k._callbacks[a][l];
+
+        if ((f || !c.seq || p[c.seq] == c.level) && h == c.action) {
+          var e;
+          (e = "keypress" == h && !t.metaKey && !t.ctrlKey) || (e = c.modifiers, e = b.sort().join(",") === e.sort().join(","));
+          e && (e = f && c.seq == f && c.level == d, (!f && c.combo == g || e) && k._callbacks[a].splice(l, 1), E.push(c));
+        }
+      }
+
+      return E;
+    }
+
+    function c(a, b, c, f) {
+      k.stopCallback(b, b.target || b.srcElement, c, f) || !1 !== a(b, c) || (b.preventDefault ? b.preventDefault() : b.returnValue = !1, b.stopPropagation ? b.stopPropagation() : b.cancelBubble = !0);
+    }
+
+    function e(a) {
+      "number" !== typeof a.which && (a.which = a.keyCode);
+      var b = z(a);
+      b && ("keyup" == a.type && y === b ? y = !1 : k.handleKey(b, F(a), a));
+    }
+
+    function m(a, g, t, f) {
+      function h(c) {
+        return function () {
+          x = c;
+          ++p[a];
+          clearTimeout(q);
+          q = setTimeout(b, 1E3);
+        };
+      }
+
+      function l(g) {
+        c(t, g, a);
+        "keyup" !== f && (y = z(g));
+        setTimeout(b, 10);
+      }
+
+      for (var d = p[a] = 0; d < g.length; ++d) {
+        var e = d + 1 === g.length ? l : h(f || A(g[d + 1]).action);
+        n(g[d], e, f, a, d);
+      }
+    }
+
+    function n(a, b, c, f, d) {
+      k._directMap[a + ":" + c] = b;
+      a = a.replace(/\s+/g, " ");
+      var e = a.split(" ");
+      1 < e.length ? m(a, e, b, c) : (c = A(a, c), k._callbacks[c.key] = k._callbacks[c.key] || [], g(c.key, c.modifiers, {
+        type: c.action
+      }, f, a, d), k._callbacks[c.key][f ? "unshift" : "push"]({
+        callback: b,
+        modifiers: c.modifiers,
+        action: c.action,
+        seq: f,
+        level: d,
+        combo: a
+      }));
+    }
+
+    var k = this;
+    a = a || u;
+    if (!(k instanceof d)) return new d(a);
+    k.target = a;
+    k._callbacks = {};
+    k._directMap = {};
+    var p = {},
+        q,
+        y = !1,
+        r = !1,
+        x = !1;
+
+    k._handleKey = function (a, d, e) {
+      var f = g(a, d, e),
+          h;
+      d = {};
+      var k = 0,
+          l = !1;
+
+      for (h = 0; h < f.length; ++h) {
+        f[h].seq && (k = Math.max(k, f[h].level));
+      }
+
+      for (h = 0; h < f.length; ++h) {
+        f[h].seq ? f[h].level == k && (l = !0, d[f[h].seq] = 1, c(f[h].callback, e, f[h].combo, f[h].seq)) : l || c(f[h].callback, e, f[h].combo);
+      }
+
+      f = "keypress" == e.type && r;
+      e.type != x || w(a) || f || b(d);
+      r = l && "keydown" == e.type;
+    };
+
+    k._bindMultiple = function (a, b, c) {
+      for (var d = 0; d < a.length; ++d) {
+        n(a[d], b, c);
+      }
+    };
+
+    v(a, "keypress", e);
+    v(a, "keydown", e);
+    v(a, "keyup", e);
+  }
+
+  if (q) {
+    var n = {
+      8: "backspace",
+      9: "tab",
+      13: "enter",
+      16: "shift",
+      17: "ctrl",
+      18: "alt",
+      20: "capslock",
+      27: "esc",
+      32: "space",
+      33: "pageup",
+      34: "pagedown",
+      35: "end",
+      36: "home",
+      37: "left",
+      38: "up",
+      39: "right",
+      40: "down",
+      45: "ins",
+      46: "del",
+      91: "meta",
+      93: "meta",
+      224: "meta"
+    },
+        r = {
+      106: "*",
+      107: "+",
+      109: "-",
+      110: ".",
+      111: "/",
+      186: ";",
+      187: "=",
+      188: ",",
+      189: "-",
+      190: ".",
+      191: "/",
+      192: "`",
+      219: "[",
+      220: "\\",
+      221: "]",
+      222: "'"
+    },
+        C = {
+      "~": "`",
+      "!": "1",
+      "@": "2",
+      "#": "3",
+      $: "4",
+      "%": "5",
+      "^": "6",
+      "&": "7",
+      "*": "8",
+      "(": "9",
+      ")": "0",
+      _: "-",
+      "+": "=",
+      ":": ";",
+      '"': "'",
+      "<": ",",
+      ">": ".",
+      "?": "/",
+      "|": "\\"
+    },
+        B = {
+      option: "alt",
+      command: "meta",
+      "return": "enter",
+      escape: "esc",
+      plus: "+",
+      mod: /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "meta" : "ctrl"
+    },
+        p;
+
+    for (c = 1; 20 > c; ++c) {
+      n[111 + c] = "f" + c;
+    }
+
+    for (c = 0; 9 >= c; ++c) {
+      n[c + 96] = c.toString();
+    }
+
+    d.prototype.bind = function (a, b, c) {
+      a = a instanceof Array ? a : [a];
+
+      this._bindMultiple.call(this, a, b, c);
+
+      return this;
+    };
+
+    d.prototype.unbind = function (a, b) {
+      return this.bind.call(this, a, function () {}, b);
+    };
+
+    d.prototype.trigger = function (a, b) {
+      if (this._directMap[a + ":" + b]) this._directMap[a + ":" + b]({}, a);
+      return this;
+    };
+
+    d.prototype.reset = function () {
+      this._callbacks = {};
+      this._directMap = {};
+      return this;
+    };
+
+    d.prototype.stopCallback = function (a, b) {
+      if (-1 < (" " + b.className + " ").indexOf(" mousetrap ") || D(b, this.target)) return !1;
+
+      if ("composedPath" in a && "function" === typeof a.composedPath) {
+        var c = a.composedPath()[0];
+        c !== a.target && (b = c);
+      }
+
+      return "INPUT" == b.tagName || "SELECT" == b.tagName || "TEXTAREA" == b.tagName || b.isContentEditable;
+    };
+
+    d.prototype.handleKey = function () {
+      return this._handleKey.apply(this, arguments);
+    };
+
+    d.addKeycodes = function (a) {
+      for (var b in a) {
+        a.hasOwnProperty(b) && (n[b] = a[b]);
+      }
+
+      p = null;
+    };
+
+    d.init = function () {
+      var a = d(u),
+          b;
+
+      for (b in a) {
+        "_" !== b.charAt(0) && (d[b] = function (b) {
+          return function () {
+            return a[b].apply(a, arguments);
+          };
+        }(b));
+      }
+    };
+
+    d.init();
+    q.Mousetrap = d;
+    "undefined" !== typeof module && module.exports && (module.exports = d);
+    "function" === typeof define && define.amd && define(function () {
+      return d;
+    });
+  }
+})("undefined" !== typeof window ? window : null, "undefined" !== typeof window ? document : null);
+
 },{}],4:[function(require,module,exports){
 (function (global){
 'use strict';
