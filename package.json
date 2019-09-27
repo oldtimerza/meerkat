@@ -7,7 +7,7 @@
   "author": "oldtimerza <bradley.morris@crvsh.io>",
   "license": "MIT",
   "scripts": {
-    "bundle": "browserify app.js > bundle.js",
+    "bundle": "browserify -t [ sveltify --extensions [.htmlz .svelte] ] app.js > bundle.js",
     "start": "electron .",
     "lint": "eslint"
   },
@@ -15,6 +15,8 @@
     "electron": "^6.0.10",
     "eslint": "^6.4.0",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2"
+    "eslint-plugin-import": "^2.18.2",
+    "svelte": "3",
+    "sveltify": "3"
   }
 }
