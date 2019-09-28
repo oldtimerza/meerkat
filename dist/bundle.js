@@ -49,7 +49,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-// (176:4) {:else}
+// (177:4) {:else}
 function create_else_block(ctx) {
 	var ul;
 
@@ -113,7 +113,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (174:4) {#if state.loading}
+// (175:4) {#if state.loading}
 function create_if_block(ctx) {
 	var p;
 
@@ -137,7 +137,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (182:12) {:else}
+// (183:12) {:else}
 function create_else_block_1(ctx) {
 	var span;
 
@@ -160,7 +160,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (180:12) {#if todo.done}
+// (181:12) {#if todo.done}
 function create_if_block_1(ctx) {
 	var span;
 
@@ -183,7 +183,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (178:8) {#each state.todos as todo, index}
+// (179:8) {#each state.todos as todo, index}
 function create_each_block(ctx) {
 	var li, t0, label, t1_value = ctx.todo.text + "", t1, label_for_value, t2, li_class_value;
 
@@ -280,7 +280,6 @@ function create_fragment(ctx) {
 			attr(div0, "class", "form-group mb-2");
 			attr(input, "type", "text");
 			attr(input, "class", "mousetrap");
-			attr(input, "onfocus", "this.value=''");
 			attr(button, "type", "submit");
 			attr(form, "class", "form-inline");
 			attr(div2, "class", "background svelte-10yyuqs");
@@ -424,7 +423,8 @@ function instance($$self, $$props, $$invalidate) {
     }
 
     function scrollPrevTodo(){
-        $$invalidate('state', state.activeTodoIndex = (state.activeTodoIndex - 1) % (state.todos.length), state)
+        //neat trick to prevent negative modulo resuls
+        $$invalidate('state', state.activeTodoIndex = ((state.activeTodoIndex - 1 % state.todos.length) + state.todos.length) % (state.todos.length), state)
     }
 
     function toggleActiveTodo(){

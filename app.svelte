@@ -81,7 +81,8 @@
     }
 
     function scrollPrevTodo(){
-        state.activeTodoIndex = (state.activeTodoIndex - 1) % (state.todos.length)
+        //neat trick to prevent negative modulo resuls
+        state.activeTodoIndex = ((state.activeTodoIndex - 1 % state.todos.length) + state.todos.length) % (state.todos.length)
     }
 
     function toggleActiveTodo(){
