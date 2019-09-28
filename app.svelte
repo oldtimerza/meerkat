@@ -51,9 +51,12 @@
     }
 
     function enterInsertMode(event){
-        changeMode(modes.INSERT)
         ref.focus()
+    }
+
+    function switchModeOnFocus(){
         insertText = ""
+        changeMode(modes.INSERT)
     }
 
     function enterNavigationMode(){
@@ -167,7 +170,7 @@
 
     <form on:submit|preventDefault={insertTodo} class="form-inline">
         <div class="form-group mb-2"></div>
-            <input type="text" bind:value={insertText} bind:this={ref} class="mousetrap"/>
+            <input type="text" bind:value={insertText} bind:this={ref} class="mousetrap" on:focus={switchModeOnFocus}/>
             <button type="submit">Add</button>
         <div>
     </form>

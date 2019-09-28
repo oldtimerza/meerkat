@@ -49,7 +49,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-// (177:4) {:else}
+// (180:4) {:else}
 function create_else_block(ctx) {
 	var ul;
 
@@ -113,7 +113,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (175:4) {#if state.loading}
+// (178:4) {#if state.loading}
 function create_if_block(ctx) {
 	var p;
 
@@ -137,7 +137,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (183:12) {:else}
+// (186:12) {:else}
 function create_else_block_1(ctx) {
 	var span;
 
@@ -160,7 +160,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (181:12) {#if todo.done}
+// (184:12) {#if todo.done}
 function create_if_block_1(ctx) {
 	var span;
 
@@ -183,7 +183,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (179:8) {#each state.todos as todo, index}
+// (182:8) {#each state.todos as todo, index}
 function create_each_block(ctx) {
 	var li, t0, label, t1_value = ctx.todo.text + "", t1, label_for_value, t2, li_class_value;
 
@@ -286,6 +286,7 @@ function create_fragment(ctx) {
 
 			dispose = [
 				listen(input, "input", ctx.input_input_handler),
+				listen(input, "focus", ctx.switchModeOnFocus),
 				listen(form, "submit", prevent_default(ctx.insertTodo))
 			];
 		},
@@ -393,9 +394,12 @@ function instance($$self, $$props, $$invalidate) {
     }
 
     function enterInsertMode(event){
-        changeMode(modes.INSERT)
         ref.focus()
+    }
+
+    function switchModeOnFocus(){
         $$invalidate('insertText', insertText = "")
+        changeMode(modes.INSERT)
     }
 
     function enterNavigationMode(){
@@ -512,6 +516,7 @@ function instance($$self, $$props, $$invalidate) {
 		insertText,
 		ref,
 		state,
+		switchModeOnFocus,
 		insertTodo,
 		input_input_handler,
 		input_binding
