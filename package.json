@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "bundle": "gulp",
-    "start": "electron .",
+    "start": "yarn bundle && electron .",
     "lint": "eslint"
   },
   "devDependencies": {

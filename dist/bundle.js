@@ -18,6 +18,7 @@ const {
 	SvelteComponent,
 	append,
 	attr,
+	binding_callbacks,
 	destroy_each,
 	detach,
 	element,
@@ -26,6 +27,8 @@ const {
 	insert,
 	listen,
 	noop,
+	prevent_default,
+	run_all,
 	safe_not_equal,
 	set_data,
 	set_input_value,
@@ -39,39 +42,28 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-// (62:0) {#each todos as todo}
+// (92:0) {#each todos as todo}
 function create_each_block(ctx) {
-	var li, input, input_checked_value, t0, p, t1_value = ctx.todo.text + "", t1, t2;
+	var li, p, t0_value = ctx.todo.text + "", t0, t1;
 
 	return {
 		c() {
 			li = element("li");
-			input = element("input");
-			t0 = space();
 			p = element("p");
-			t1 = text(t1_value);
-			t2 = space();
-			attr(input, "class", "toggle");
-			attr(input, "type", "checkbox");
-			input.checked = input_checked_value = ctx.todo.done;
+			t0 = text(t0_value);
+			t1 = space();
 		},
 
 		m(target, anchor) {
 			insert(target, li, anchor);
-			append(li, input);
-			append(li, t0);
 			append(li, p);
-			append(p, t1);
-			append(li, t2);
+			append(p, t0);
+			append(li, t1);
 		},
 
 		p(changed, ctx) {
-			if ((changed.todos) && input_checked_value !== (input_checked_value = ctx.todo.done)) {
-				input.checked = input_checked_value;
-			}
-
-			if ((changed.todos) && t1_value !== (t1_value = ctx.todo.text + "")) {
-				set_data(t1, t1_value);
+			if ((changed.todos) && t0_value !== (t0_value = ctx.todo.text + "")) {
+				set_data(t0, t0_value);
 			}
 		},
 
@@ -84,7 +76,7 @@ function create_each_block(ctx) {
 }
 
 function create_fragment(ctx) {
-	var h1, t1, input, t2, each_1_anchor, dispose;
+	var h1, t1, form, input, t2, button, t4, each_1_anchor, dispose;
 
 	let each_value = ctx.todos;
 
@@ -99,8 +91,12 @@ function create_fragment(ctx) {
 			h1 = element("h1");
 			h1.textContent = "Welcome to meerkat - the simple VIM inspired todo maker";
 			t1 = space();
+			form = element("form");
 			input = element("input");
 			t2 = space();
+			button = element("button");
+			button.textContent = "Add";
+			t4 = space();
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
@@ -108,18 +104,27 @@ function create_fragment(ctx) {
 
 			each_1_anchor = empty();
 			attr(input, "type", "text");
-			attr(input, "onsubmit", ctx.insertTodo);
-			dispose = listen(input, "input", ctx.input_input_handler);
+			attr(input, "class", "mousetrap");
+			attr(button, "type", "submit");
+
+			dispose = [
+				listen(input, "input", ctx.input_input_handler),
+				listen(form, "submit", prevent_default(ctx.insertTodo))
+			];
 		},
 
 		m(target, anchor) {
 			insert(target, h1, anchor);
 			insert(target, t1, anchor);
-			insert(target, input, anchor);
+			insert(target, form, anchor);
+			append(form, input);
 
 			set_input_value(input, ctx.insertText);
 
-			insert(target, t2, anchor);
+			ctx.input_binding(input);
+			append(form, t2);
+			append(form, button);
+			insert(target, t4, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(target, anchor);
@@ -161,8 +166,13 @@ function create_fragment(ctx) {
 			if (detaching) {
 				detach(h1);
 				detach(t1);
-				detach(input);
-				detach(t2);
+				detach(form);
+			}
+
+			ctx.input_binding(null);
+
+			if (detaching) {
+				detach(t4);
 			}
 
 			destroy_each(each_blocks, detaching);
@@ -171,7 +181,7 @@ function create_fragment(ctx) {
 				detach(each_1_anchor);
 			}
 
-			dispose();
+			run_all(dispose);
 		}
 	};
 }
@@ -179,7 +189,7 @@ function create_fragment(ctx) {
 function instance($$self, $$props, $$invalidate) {
 	const Mousetrap = require('./mousetrap.min.js');
 
-    //handle the VIM style modes
+    //state
     const modes = {
         NAVIGATE: "NAVIGATE",
         EDIT: "EDIT",
@@ -190,13 +200,15 @@ function instance($$self, $$props, $$invalidate) {
 
     let insertText = ""
 
-    let todos = [{id: 0, done: false, text: "Get meerkat working"}]
+    let ref
 
-    function changeMode(newMode){
-        currentMode = newMode
-    }
+    let lastId = 0;
 
-    function determineActionFromMode(doInNav, doInEdit, doInInsert){
+    const createTodo = (text, done = false) => ({id: ++lastId, text, done});
+
+    let todos = [createTodo("Get stuff done")]
+
+    function determineActionFromMode({doInNav, doInEdit, doInInsert}){
         if(currentMode == modes.NAVIGATE){
             doInNav()
         }
@@ -211,37 +223,70 @@ function instance($$self, $$props, $$invalidate) {
     }
 
     //actions
+
+    function changeMode(newMode){
+        currentMode = newMode
+    }
+
     function enterInsertMode(){
-        
         changeMode(modes.INSERT)
+        ref.focus()
+        $$invalidate('insertText', insertText = "")
+    }
+
+    function enterNavigationMode(){
+        changeMode(modes.NAVIGATE)
+        ref.blur()
+        $$invalidate('insertText', insertText = "")
     }
 
     function insertTodo(){
-        $$invalidate('todos', todos = [...todos, {id: 0, done: false, text: insertText}])
+        $$invalidate('todos', todos = [...todos, createTodo(insertText)])
         $$invalidate('insertText', insertText = "")
-        changeMode(modes.NAVIGATE)
+        enterNavigationMode()
     }
 
-
     //key bindings
+
     Mousetrap.bind('i', 
-    determineActionFromMode(
-        () => changeMode(modes.INSERT),
-        () => {},
-        () => {}
+        () => determineActionFromMode(
+            {
+                doInNav: enterInsertMode,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('esc',
+        () => determineActionFromMode(
+            {
+                doInNav: () => {},
+                doInInsert: enterNavigationMode,
+                doInEdit: enterNavigationMode
+            }
+        ),
+        'keyup'
     )
-   );
 
 	function input_input_handler() {
 		insertText = this.value;
 		$$invalidate('insertText', insertText);
 	}
 
+	function input_binding($$value) {
+		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
+			$$invalidate('ref', ref = $$value);
+		});
+	}
+
 	return {
 		insertText,
+		ref,
 		todos,
 		insertTodo,
-		input_input_handler
+		input_input_handler,
+		input_binding
 	};
 }
 

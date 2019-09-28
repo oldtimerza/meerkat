@@ -1,7 +1,7 @@
 <script>
     const Mousetrap = require('./mousetrap.min.js');
 
-    //handle the VIM style modes
+    //state
     const modes = {
         NAVIGATE: "NAVIGATE",
         EDIT: "EDIT",
@@ -12,13 +12,15 @@
 
     let insertText = ""
 
-    let todos = [{id: 0, done: false, text: "Get meerkat working"}]
+    let ref
 
-    function changeMode(newMode){
-        currentMode = newMode
-    }
+    let lastId = 0;
 
-    function determineActionFromMode(doInNav, doInEdit, doInInsert){
+    const createTodo = (text, done = false) => ({id: ++lastId, text, done});
+
+    let todos = [createTodo("Get stuff done")]
+
+    function determineActionFromMode({doInNav, doInEdit, doInInsert}){
         if(currentMode == modes.NAVIGATE){
             doInNav()
         }
@@ -33,35 +35,62 @@
     }
 
     //actions
+
+    function changeMode(newMode){
+        currentMode = newMode
+    }
+
     function enterInsertMode(){
-        
         changeMode(modes.INSERT)
+        ref.focus()
+        insertText = ""
+    }
+
+    function enterNavigationMode(){
+        changeMode(modes.NAVIGATE)
+        ref.blur()
+        insertText = ""
     }
 
     function insertTodo(){
-        todos = [...todos, {id: 0, done: false, text: insertText}]
+        todos = [...todos, createTodo(insertText)]
         insertText = ""
-        changeMode(modes.NAVIGATE)
+        enterNavigationMode()
     }
 
-
     //key bindings
+
     Mousetrap.bind('i', 
-    determineActionFromMode(
-        () => changeMode(modes.INSERT),
-        () => {},
-        () => {}
+        () => determineActionFromMode(
+            {
+                doInNav: enterInsertMode,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('esc',
+        () => determineActionFromMode(
+            {
+                doInNav: () => {},
+                doInInsert: enterNavigationMode,
+                doInEdit: enterNavigationMode
+            }
+        ),
+        'keyup'
     )
-   );
 </script>
 
 <h1>Welcome to meerkat - the simple VIM inspired todo maker</h1>
 
-<input type="text" bind:value={insertText} onsubmit={insertTodo}/>
+<form on:submit|preventDefault={insertTodo}>
+  <input type="text" bind:value={insertText} bind:this={ref} class="mousetrap"/>
+  <button type="submit">Add</button>
+</form>
 
 {#each todos as todo}
     <li>
-        <input class="toggle" type="checkbox" checked="{todo.done}" />
         <p>{todo.text}</p>
     </li>
 {/each}
