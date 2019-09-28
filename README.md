@@ -24,3 +24,5 @@ A simple keyboard driven, VIM-styled todo manager.
 ### In Insert mode:
 
     Typing will enter text in the top insert bar. Enter will create a new todo item
+    
+    escape - go to Navigation mode
