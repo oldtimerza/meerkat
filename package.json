@@ -7,6 +7,7 @@
   "author": "oldtimerza <bradley.morris@crvsh.io>",
   "license": "MIT",
   "scripts": {
+    "package": "electron-packager . meerkat",
     "bundle": "gulp",
     "start": "yarn bundle && electron .",
     "lint": "eslint"
@@ -18,6 +19,7 @@
     "babelify": "^10.0.0",
     "browserify": "^16.5.0",
     "electron": "^6.0.10",
+    "electron-packager": "^14.0.6",
     "eslint": "^6.4.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
