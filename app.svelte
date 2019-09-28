@@ -1,5 +1,14 @@
 <script>
+    const { ipcRenderer } = window.require('electron')
     const Mousetrap = require('./mousetrap.min.js');
+
+    //setup
+    ipcRenderer.send('request-todos')
+
+    ipcRenderer.on('todos', (event, arg) => {
+        state.todos = arg
+        state.loading = false
+    })
 
     //state
     const modes = {
@@ -14,11 +23,11 @@
 
     let ref
 
-    let lastId = 0;
-
-    const createTodo = (text, done = false) => ({id: ++lastId, text, done});
-
-    let todos = [createTodo("Get stuff done")]
+    let state = {
+        loading: true,
+        todos: [],
+        activeTodoIndex: 0
+    }
 
     function determineActionFromMode({doInNav, doInEdit, doInInsert}){
         if(currentMode == modes.NAVIGATE){
@@ -35,12 +44,13 @@
     }
 
     //actions
+    const createTodo = (text, done = false) => ({text, done});
 
     function changeMode(newMode){
         currentMode = newMode
     }
 
-    function enterInsertMode(){
+    function enterInsertMode(event){
         changeMode(modes.INSERT)
         ref.focus()
         insertText = ""
@@ -53,9 +63,32 @@
     }
 
     function insertTodo(){
-        todos = [...todos, createTodo(insertText)]
+        ipcRenderer.send('add-todo', createTodo(insertText))
         insertText = ""
         enterNavigationMode()
+    }
+
+    function removeTodo(){
+        if(state.todos[state.activeTodoIndex]){
+            const index = state.activeTodoIndex
+            state.activeTodoIndex = 0
+            ipcRenderer.send('remove-todo', state.todos[index])
+        }
+    }
+
+    function scrollNextTodo(){
+        state.activeTodoIndex = (state.activeTodoIndex + 1) % (state.todos.length)
+    }
+
+    function scrollPrevTodo(){
+        state.activeTodoIndex = (state.activeTodoIndex - 1) % (state.todos.length)
+    }
+
+    function toggleActiveTodo(){
+        if(state.todos[state.activeTodoIndex]){
+            state.todos[state.activeTodoIndex].done = !state.todos[state.activeTodoIndex].done 
+            ipcRenderer.send('update-todo', state.todos[state.activeTodoIndex])
+        }
     }
 
     //key bindings
@@ -64,6 +97,46 @@
         () => determineActionFromMode(
             {
                 doInNav: enterInsertMode,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('j', 
+        () => determineActionFromMode(
+            {
+                doInNav: scrollNextTodo,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('k', 
+        () => determineActionFromMode(
+            {
+                doInNav: scrollPrevTodo,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('d d', 
+        () => determineActionFromMode(
+            {
+                doInNav: removeTodo,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('space', 
+        () => determineActionFromMode(
+            {
+                doInNav: toggleActiveTodo,
                 doInInsert:() => {},
                 doInEdit: () => {}
             }
@@ -82,15 +155,36 @@
     )
 </script>
 
-<h1>Welcome to meerkat - the simple VIM inspired todo maker</h1>
+<style>
+    .background {
+        background-color: #7f8ca1
+    }
+</style>
 
-<form on:submit|preventDefault={insertTodo}>
-  <input type="text" bind:value={insertText} bind:this={ref} class="mousetrap"/>
-  <button type="submit">Add</button>
-</form>
+<div class="background">
+    <h1>Welcome to meerkat - the simple VIM inspired todo maker</h1>
 
-{#each todos as todo}
-    <li>
-        <p>{todo.text}</p>
-    </li>
-{/each}
+    <form on:submit|preventDefault={insertTodo} class="form-inline">
+        <div class="form-group mb-2"></div>
+            <input type="text" bind:value={insertText} bind:this={ref} class="mousetrap"/>
+            <button type="submit">Add</button>
+        <div>
+    </form>
+
+    {#if state.loading}
+        <p>Loading todos</p>
+    {:else}
+    <ul class="list-group">
+        {#each state.todos as todo, index}
+        <li class="list-group-item {index == state.activeTodoIndex?  ' active' : ''}">
+            {#if todo.done}
+                <span class="badge badge-success">✔️</span>
+            {:else}
+                <span class="badge badge-danger">❌</span>
+            {/if}
+            <label for={todo.id}>{todo.text}</label> 
+        </li>
+        {/each}
+    </ul>
+    {/if}
+</div>

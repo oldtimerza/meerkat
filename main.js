@@ -3,16 +3,19 @@ const {
 } = require('electron');
 const path = require('path');
 const url = require('url');
+const Datastore = require('nedb-promises');
 
 let tray;
 let window;
+
+const todosdb = Datastore.create('./todos.db');
 
 const createWindow = () => {
   window = new BrowserWindow({
     width: 640,
     height: 480,
-    show: false,
-    frame: true,
+    show: true,
+    frame: false,
     fullscreenable: false,
     resizable: false,
     transparent: true,
@@ -20,6 +23,7 @@ const createWindow = () => {
       // Prevents renderer process code from not running when window is
       // hidden
       backgroundThrottling: false,
+      nodeIntegration: true,
     },
   });
   window.loadURL(`file://${path.join(__dirname, 'index.html')}`);
@@ -95,6 +99,7 @@ app.on('ready', () => {
   createTray();
   createWindow();
 
+
   globalShortcut.register('Alt+Space', () => {
     toggleWindow();
   });
@@ -111,4 +116,29 @@ app.on('will-quit', () => {
 
 ipcMain.on('show-window', () => {
   showWindow();
+});
+
+ipcMain.on('request-todos', () => {
+  todosdb.find({})
+    .then((docs) => {
+      window.webContents.send('todos', docs);
+    });
+});
+
+ipcMain.on('add-todo', (event, arg) => {
+  todosdb.insert(arg)
+    .then(() => todosdb.find({}))
+    .then((docs) => window.webContents.send('todos', docs));
+});
+
+ipcMain.on('update-todo', (event, arg) => {
+  todosdb.update({ _id: arg._id }, { $set: { done: arg.done } }, { multi: true })
+    .then(() => todosdb.find({}))
+    .then((docs) => window.webContents.send('todos', docs));
+});
+
+ipcMain.on('remove-todo', (event, arg) => {
+  todosdb.remove({ _id: arg._id }, { multi: true })
+    .then(() => todosdb.find({}))
+    .then((docs) => window.webContents.send('todos', docs));
 });

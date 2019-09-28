@@ -22,7 +22,6 @@ const {
 	destroy_each,
 	detach,
 	element,
-	empty,
 	init,
 	insert,
 	listen,
@@ -36,49 +35,25 @@ const {
 	text
 } = require("svelte/internal");
 
+function add_css() {
+	var style = element("style");
+	style.id = 'svelte-10yyuqs-style';
+	style.textContent = ".background.svelte-10yyuqs{background-color:#7f8ca1\r\n    }";
+	append(document.head, style);
+}
+
 function get_each_context(ctx, list, i) {
 	const child_ctx = Object.create(ctx);
 	child_ctx.todo = list[i];
+	child_ctx.index = i;
 	return child_ctx;
 }
 
-// (92:0) {#each todos as todo}
-function create_each_block(ctx) {
-	var li, p, t0_value = ctx.todo.text + "", t0, t1;
+// (176:4) {:else}
+function create_else_block(ctx) {
+	var ul;
 
-	return {
-		c() {
-			li = element("li");
-			p = element("p");
-			t0 = text(t0_value);
-			t1 = space();
-		},
-
-		m(target, anchor) {
-			insert(target, li, anchor);
-			append(li, p);
-			append(p, t0);
-			append(li, t1);
-		},
-
-		p(changed, ctx) {
-			if ((changed.todos) && t0_value !== (t0_value = ctx.todo.text + "")) {
-				set_data(t0, t0_value);
-			}
-		},
-
-		d(detaching) {
-			if (detaching) {
-				detach(li);
-			}
-		}
-	};
-}
-
-function create_fragment(ctx) {
-	var h1, t1, form, input, t2, button, t4, each_1_anchor, dispose;
-
-	let each_value = ctx.todos;
+	let each_value = ctx.state.todos;
 
 	let each_blocks = [];
 
@@ -88,56 +63,25 @@ function create_fragment(ctx) {
 
 	return {
 		c() {
-			h1 = element("h1");
-			h1.textContent = "Welcome to meerkat - the simple VIM inspired todo maker";
-			t1 = space();
-			form = element("form");
-			input = element("input");
-			t2 = space();
-			button = element("button");
-			button.textContent = "Add";
-			t4 = space();
+			ul = element("ul");
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
-
-			each_1_anchor = empty();
-			attr(input, "type", "text");
-			attr(input, "class", "mousetrap");
-			attr(button, "type", "submit");
-
-			dispose = [
-				listen(input, "input", ctx.input_input_handler),
-				listen(form, "submit", prevent_default(ctx.insertTodo))
-			];
+			attr(ul, "class", "list-group");
 		},
 
 		m(target, anchor) {
-			insert(target, h1, anchor);
-			insert(target, t1, anchor);
-			insert(target, form, anchor);
-			append(form, input);
-
-			set_input_value(input, ctx.insertText);
-
-			ctx.input_binding(input);
-			append(form, t2);
-			append(form, button);
-			insert(target, t4, anchor);
+			insert(target, ul, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(target, anchor);
+				each_blocks[i].m(ul, null);
 			}
-
-			insert(target, each_1_anchor, anchor);
 		},
 
 		p(changed, ctx) {
-			if (changed.insertText && (input.value !== ctx.insertText)) set_input_value(input, ctx.insertText);
-
-			if (changed.todos) {
-				each_value = ctx.todos;
+			if (changed.state) {
+				each_value = ctx.state.todos;
 
 				let i;
 				for (i = 0; i < each_value.length; i += 1) {
@@ -148,7 +92,7 @@ function create_fragment(ctx) {
 					} else {
 						each_blocks[i] = create_each_block(child_ctx);
 						each_blocks[i].c();
-						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
+						each_blocks[i].m(ul, null);
 					}
 				}
 
@@ -159,35 +103,255 @@ function create_fragment(ctx) {
 			}
 		},
 
+		d(detaching) {
+			if (detaching) {
+				detach(ul);
+			}
+
+			destroy_each(each_blocks, detaching);
+		}
+	};
+}
+
+// (174:4) {#if state.loading}
+function create_if_block(ctx) {
+	var p;
+
+	return {
+		c() {
+			p = element("p");
+			p.textContent = "Loading todos";
+		},
+
+		m(target, anchor) {
+			insert(target, p, anchor);
+		},
+
+		p: noop,
+
+		d(detaching) {
+			if (detaching) {
+				detach(p);
+			}
+		}
+	};
+}
+
+// (182:12) {:else}
+function create_else_block_1(ctx) {
+	var span;
+
+	return {
+		c() {
+			span = element("span");
+			span.textContent = "❌";
+			attr(span, "class", "badge badge-danger");
+		},
+
+		m(target, anchor) {
+			insert(target, span, anchor);
+		},
+
+		d(detaching) {
+			if (detaching) {
+				detach(span);
+			}
+		}
+	};
+}
+
+// (180:12) {#if todo.done}
+function create_if_block_1(ctx) {
+	var span;
+
+	return {
+		c() {
+			span = element("span");
+			span.textContent = "✔️";
+			attr(span, "class", "badge badge-success");
+		},
+
+		m(target, anchor) {
+			insert(target, span, anchor);
+		},
+
+		d(detaching) {
+			if (detaching) {
+				detach(span);
+			}
+		}
+	};
+}
+
+// (178:8) {#each state.todos as todo, index}
+function create_each_block(ctx) {
+	var li, t0, label, t1_value = ctx.todo.text + "", t1, label_for_value, t2, li_class_value;
+
+	function select_block_type_1(changed, ctx) {
+		if (ctx.todo.done) return create_if_block_1;
+		return create_else_block_1;
+	}
+
+	var current_block_type = select_block_type_1(null, ctx);
+	var if_block = current_block_type(ctx);
+
+	return {
+		c() {
+			li = element("li");
+			if_block.c();
+			t0 = space();
+			label = element("label");
+			t1 = text(t1_value);
+			t2 = space();
+			attr(label, "for", label_for_value = ctx.todo.id);
+			attr(li, "class", li_class_value = "list-group-item " + (ctx.index == ctx.state.activeTodoIndex?  ' active' : '') + " svelte-10yyuqs");
+		},
+
+		m(target, anchor) {
+			insert(target, li, anchor);
+			if_block.m(li, null);
+			append(li, t0);
+			append(li, label);
+			append(label, t1);
+			append(li, t2);
+		},
+
+		p(changed, ctx) {
+			if (current_block_type !== (current_block_type = select_block_type_1(changed, ctx))) {
+				if_block.d(1);
+				if_block = current_block_type(ctx);
+				if (if_block) {
+					if_block.c();
+					if_block.m(li, t0);
+				}
+			}
+
+			if ((changed.state) && t1_value !== (t1_value = ctx.todo.text + "")) {
+				set_data(t1, t1_value);
+			}
+
+			if ((changed.state) && label_for_value !== (label_for_value = ctx.todo.id)) {
+				attr(label, "for", label_for_value);
+			}
+
+			if ((changed.state) && li_class_value !== (li_class_value = "list-group-item " + (ctx.index == ctx.state.activeTodoIndex?  ' active' : '') + " svelte-10yyuqs")) {
+				attr(li, "class", li_class_value);
+			}
+		},
+
+		d(detaching) {
+			if (detaching) {
+				detach(li);
+			}
+
+			if_block.d();
+		}
+	};
+}
+
+function create_fragment(ctx) {
+	var div2, h1, t1, form, div0, t2, input, t3, button, t5, div1, t6, dispose;
+
+	function select_block_type(changed, ctx) {
+		if (ctx.state.loading) return create_if_block;
+		return create_else_block;
+	}
+
+	var current_block_type = select_block_type(null, ctx);
+	var if_block = current_block_type(ctx);
+
+	return {
+		c() {
+			div2 = element("div");
+			h1 = element("h1");
+			h1.textContent = "Welcome to meerkat - the simple VIM inspired todo maker";
+			t1 = space();
+			form = element("form");
+			div0 = element("div");
+			t2 = space();
+			input = element("input");
+			t3 = space();
+			button = element("button");
+			button.textContent = "Add";
+			t5 = space();
+			div1 = element("div");
+			t6 = space();
+			if_block.c();
+			attr(div0, "class", "form-group mb-2");
+			attr(input, "type", "text");
+			attr(input, "class", "mousetrap");
+			attr(input, "onfocus", "this.value=''");
+			attr(button, "type", "submit");
+			attr(form, "class", "form-inline");
+			attr(div2, "class", "background svelte-10yyuqs");
+
+			dispose = [
+				listen(input, "input", ctx.input_input_handler),
+				listen(form, "submit", prevent_default(ctx.insertTodo))
+			];
+		},
+
+		m(target, anchor) {
+			insert(target, div2, anchor);
+			append(div2, h1);
+			append(div2, t1);
+			append(div2, form);
+			append(form, div0);
+			append(form, t2);
+			append(form, input);
+
+			set_input_value(input, ctx.insertText);
+
+			ctx.input_binding(input);
+			append(form, t3);
+			append(form, button);
+			append(form, t5);
+			append(form, div1);
+			append(div2, t6);
+			if_block.m(div2, null);
+		},
+
+		p(changed, ctx) {
+			if (changed.insertText && (input.value !== ctx.insertText)) set_input_value(input, ctx.insertText);
+
+			if (current_block_type === (current_block_type = select_block_type(changed, ctx)) && if_block) {
+				if_block.p(changed, ctx);
+			} else {
+				if_block.d(1);
+				if_block = current_block_type(ctx);
+				if (if_block) {
+					if_block.c();
+					if_block.m(div2, null);
+				}
+			}
+		},
+
 		i: noop,
 		o: noop,
 
 		d(detaching) {
 			if (detaching) {
-				detach(h1);
-				detach(t1);
-				detach(form);
+				detach(div2);
 			}
 
 			ctx.input_binding(null);
-
-			if (detaching) {
-				detach(t4);
-			}
-
-			destroy_each(each_blocks, detaching);
-
-			if (detaching) {
-				detach(each_1_anchor);
-			}
-
+			if_block.d();
 			run_all(dispose);
 		}
 	};
 }
 
 function instance($$self, $$props, $$invalidate) {
-	const Mousetrap = require('./mousetrap.min.js');
+	const { ipcRenderer } = window.require('electron')
+    const Mousetrap = require('./mousetrap.min.js');
+
+    //setup
+    ipcRenderer.send('request-todos')
+
+    ipcRenderer.on('todos', (event, arg) => {
+        $$invalidate('state', state.todos = arg, state)
+        $$invalidate('state', state.loading = false, state)
+    })
 
     //state
     const modes = {
@@ -202,11 +366,11 @@ function instance($$self, $$props, $$invalidate) {
 
     let ref
 
-    let lastId = 0;
-
-    const createTodo = (text, done = false) => ({id: ++lastId, text, done});
-
-    let todos = [createTodo("Get stuff done")]
+    let state = {
+        loading: true,
+        todos: [],
+        activeTodoIndex: 0
+    }
 
     function determineActionFromMode({doInNav, doInEdit, doInInsert}){
         if(currentMode == modes.NAVIGATE){
@@ -223,12 +387,13 @@ function instance($$self, $$props, $$invalidate) {
     }
 
     //actions
+    const createTodo = (text, done = false) => ({text, done});
 
     function changeMode(newMode){
         currentMode = newMode
     }
 
-    function enterInsertMode(){
+    function enterInsertMode(event){
         changeMode(modes.INSERT)
         ref.focus()
         $$invalidate('insertText', insertText = "")
@@ -241,9 +406,32 @@ function instance($$self, $$props, $$invalidate) {
     }
 
     function insertTodo(){
-        $$invalidate('todos', todos = [...todos, createTodo(insertText)])
+        ipcRenderer.send('add-todo', createTodo(insertText))
         $$invalidate('insertText', insertText = "")
         enterNavigationMode()
+    }
+
+    function removeTodo(){
+        if(state.todos[state.activeTodoIndex]){
+            const index = state.activeTodoIndex
+            $$invalidate('state', state.activeTodoIndex = 0, state)
+            ipcRenderer.send('remove-todo', state.todos[index])
+        }
+    }
+
+    function scrollNextTodo(){
+        $$invalidate('state', state.activeTodoIndex = (state.activeTodoIndex + 1) % (state.todos.length), state)
+    }
+
+    function scrollPrevTodo(){
+        $$invalidate('state', state.activeTodoIndex = (state.activeTodoIndex - 1) % (state.todos.length), state)
+    }
+
+    function toggleActiveTodo(){
+        if(state.todos[state.activeTodoIndex]){
+            $$invalidate('state', state.todos[state.activeTodoIndex].done = !state.todos[state.activeTodoIndex].done, state) 
+            ipcRenderer.send('update-todo', state.todos[state.activeTodoIndex])
+        }
     }
 
     //key bindings
@@ -252,6 +440,46 @@ function instance($$self, $$props, $$invalidate) {
         () => determineActionFromMode(
             {
                 doInNav: enterInsertMode,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('j', 
+        () => determineActionFromMode(
+            {
+                doInNav: scrollNextTodo,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('k', 
+        () => determineActionFromMode(
+            {
+                doInNav: scrollPrevTodo,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('d d', 
+        () => determineActionFromMode(
+            {
+                doInNav: removeTodo,
+                doInInsert:() => {},
+                doInEdit: () => {}
+            }
+        )
+    );
+
+    Mousetrap.bind('space', 
+        () => determineActionFromMode(
+            {
+                doInNav: toggleActiveTodo,
                 doInInsert:() => {},
                 doInEdit: () => {}
             }
@@ -283,7 +511,7 @@ function instance($$self, $$props, $$invalidate) {
 	return {
 		insertText,
 		ref,
-		todos,
+		state,
 		insertTodo,
 		input_input_handler,
 		input_binding
@@ -293,6 +521,7 @@ function instance($$self, $$props, $$invalidate) {
 class App extends SvelteComponent {
 	constructor(options) {
 		super();
+		if (!document.getElementById("svelte-10yyuqs-style")) add_css();
 		init(this, options, instance, create_fragment, safe_not_equal, []);
 	}
 }
