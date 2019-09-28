@@ -114,12 +114,14 @@ app.on('will-quit', () => {
   globalShortcut.unregisterAll();
 });
 
+const orderedTodos = () => todosdb.find({}).sort({ created: 1 });
+
 ipcMain.on('show-window', () => {
   showWindow();
 });
 
 ipcMain.on('request-todos', () => {
-  todosdb.find({})
+  orderedTodos()
     .then((docs) => {
       window.webContents.send('todos', docs);
     });
@@ -127,18 +129,18 @@ ipcMain.on('request-todos', () => {
 
 ipcMain.on('add-todo', (event, arg) => {
   todosdb.insert(arg)
-    .then(() => todosdb.find({}))
+    .then(() => orderedTodos())
     .then((docs) => window.webContents.send('todos', docs));
 });
 
 ipcMain.on('update-todo', (event, arg) => {
   todosdb.update({ _id: arg._id }, { $set: { done: arg.done } }, { multi: true })
-    .then(() => todosdb.find({}))
+    .then(() => orderedTodos())
     .then((docs) => window.webContents.send('todos', docs));
 });
 
 ipcMain.on('remove-todo', (event, arg) => {
   todosdb.remove({ _id: arg._id }, { multi: true })
-    .then(() => todosdb.find({}))
+    .then(() => orderedTodos())
     .then((docs) => window.webContents.send('todos', docs));
 });

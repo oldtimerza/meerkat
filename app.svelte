@@ -44,7 +44,7 @@
     }
 
     //actions
-    const createTodo = (text, done = false) => ({text, done});
+    const createTodo = (text, done = false) => ({text, done, created: new Date()});
 
     function changeMode(newMode){
         currentMode = newMode
@@ -56,6 +56,7 @@
 
     function switchModeOnFocus(){
         insertText = ""
+        ref.value = ""
         changeMode(modes.INSERT)
     }
 
@@ -166,15 +167,12 @@
 </style>
 
 <div class="background">
-    <h1>Welcome to meerkat - the simple VIM inspired todo maker</h1>
-
-    <form on:submit|preventDefault={insertTodo} class="form-inline">
-        <div class="form-group mb-2"></div>
-            <input type="text" bind:value={insertText} bind:this={ref} class="mousetrap" on:focus={switchModeOnFocus}/>
-            <button type="submit">Add</button>
-        <div>
+    <form on:submit|preventDefault={insertTodo}>
+        <div class="input-group mb-3">
+            <input type="text" class=" mousetrap form-control" bind:value={insertText} bind:this={ref} on:focus={switchModeOnFocus}/>
+            <button type="submit" class="btn btn-primary">+</button>
+        </div>
     </form>
-
     {#if state.loading}
         <p>Loading todos</p>
     {:else}
