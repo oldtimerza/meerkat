@@ -95,4 +95,10 @@ public/
 # DynamoDB Local files
 .dynamodb/
 
+#Nedb dbs
+*.db
+
+#Bundled code
+dist/*
+
 # End of https://www.gitignore.io/api/node
