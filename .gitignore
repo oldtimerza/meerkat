@@ -101,4 +101,7 @@ public/
 #Bundled code
 dist/
 
+#electron packages
+packages/
+
 # End of https://www.gitignore.io/api/node

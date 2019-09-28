@@ -7,7 +7,7 @@
   "author": "oldtimerza <bradley.morris@crvsh.io>",
   "license": "MIT",
   "scripts": {
-    "package": "electron-packager . meerkat",
+    "package": "electron-packager . meerkat --out=./packages",
     "bundle": "gulp",
     "start": "yarn bundle && electron .",
     "lint": "eslint"
