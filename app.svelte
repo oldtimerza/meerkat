@@ -54,9 +54,8 @@
         ref.focus()
     }
 
-    function switchModeOnFocus(){
+    function onFocus(){
         insertText = ""
-        ref.value = ""
         changeMode(modes.INSERT)
     }
 
@@ -105,7 +104,8 @@
                 doInInsert:() => {},
                 doInEdit: () => {}
             }
-        )
+        ),
+        'keyup'
     );
 
     Mousetrap.bind('j', 
@@ -169,7 +169,7 @@
 <div class="background">
     <form on:submit|preventDefault={insertTodo}>
         <div class="input-group mb-3">
-            <input type="text" class=" mousetrap form-control" bind:value={insertText} bind:this={ref} on:focus={switchModeOnFocus}/>
+            <input type="text" class=" mousetrap form-control" bind:value={insertText} bind:this={ref} on:focus={onFocus}/>
             <button type="submit" class="btn btn-primary">+</button>
         </div>
     </form>
