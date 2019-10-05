@@ -164,29 +164,92 @@
     .background {
         background-color: #7f8ca1
     }
+
+    .custom-form {
+        margin-bottom: 0px;
+    }
+
+    .custom-row {
+        height: 54px;
+    }
+
+    .align-left {
+        position: absolute;
+        left: 0;
+    }
+
+    .full-width {
+        width: 640px;
+        max-width: 640px;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    .checkbox-container {
+        padding: 0px;
+    }
+
+    .custom-check {
+        height: 54px;
+        width: 54px;
+        left: 0px;
+        padding: 0px;
+        font-size: 24px;
+        text-align: center;
+        vertical-align: middle;
+        line-height: 48px;     
+    }
+
+    .description {
+        color: white;
+        font-size: 24px;
+        text-align: center;
+        vertical-align: middle;
+        line-height: 48px;     
+    }
+
+    .done {
+        background: green;
+    }
+
+    .not-done{
+        background: red;
+    }
+
+    .active {
+        background: blue;
+    }
 </style>
 
-<div class="background">
+<div class="align-left full-width background">
     <form on:submit|preventDefault={insertTodo}>
-        <div class="input-group mb-3">
+        <div class="custom-form input-group mb-3">
             <input type="text" class=" mousetrap form-control" bind:value={insertText} bind:this={ref} on:focus={onFocus}/>
-            <button type="submit" class="btn btn-primary">+</button>
+            <button type="submit" class="btn btn-primary">Add</button>
         </div>
     </form>
     {#if state.loading}
         <p>Loading todos</p>
     {:else}
-    <ul class="list-group">
+    <div class="container-fluid">
         {#each state.todos as todo, index}
-        <li class="list-group-item {index == state.activeTodoIndex?  ' active' : ''}">
-            {#if todo.done}
-                <span class="badge badge-success">✔️</span>
-            {:else}
-                <span class="badge badge-danger">❌</span>
-            {/if}
-            <label for={todo.id}>{todo.text}</label> 
-        </li>
+        <div class="custom-row row {index == state.activeTodoIndex?  ' active' : ''}">
+            <div class= "checkbox-container col-2">
+                {#if todo.done}
+                    <div class="custom-check done">
+                        ✔️
+                    </div>
+                {:else}
+                    <div class="custom-check not-done">
+                        ❌
+                    </div>
+                {/if}
+            </div>
+            <div class="description col-10">
+                {todo.text}
+            </div>
+        </div>
         {/each}
-    </ul>
+    </div>
     {/if}
 </div>
