@@ -210,7 +210,9 @@
     .description {
         color: white;
         font-size: 16px;
-        font-size: 2.5vw;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
         padding-left: 2.5%;
         vertical-align: middle;
         line-height: 48px;     
