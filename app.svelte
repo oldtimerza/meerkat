@@ -26,7 +26,8 @@
     let state = {
         loading: true,
         todos: [],
-        activeTodoIndex: 0
+        activeTodoIndex: 0,
+        percentComplete: 0
     }
 
     function determineActionFromMode({doInNav, doInEdit, doInInsert}){
@@ -41,6 +42,11 @@
         if(currentMode == modes.INSERT){
             doInInsert()
         }
+    }
+
+    $: {
+        const completeTodos = state.todos.filter(todo => todo.done)
+        state.percentComplete = (completeTodos.length / state.todos.length)*100
     }
 
     //actions
@@ -162,11 +168,12 @@
 
 <style>
     .background {
-        background-color: #7f8ca1
+        background-color: #22096A;
+        height: 100%;
     }
 
     .custom-form {
-        margin-bottom: 0px;
+        margin-bottom: 0px !important;
     }
 
     .custom-row {
@@ -202,32 +209,54 @@
 
     .description {
         color: white;
-        font-size: 24px;
-        text-align: center;
+        font-size: 16px;
+        font-size: 2.5vw;
+        padding-left: 2.5%;
         vertical-align: middle;
         line-height: 48px;     
     }
 
     .done {
-        background: green;
+        background: #00AF64;
     }
 
     .not-done{
-        background: red;
+        background: #EA0037;
     }
 
     .active {
-        background: blue;
+        background: #3C13AF;
+    }
+
+    .remove-radius {
+        border-radius: 0 !important;
+    }
+
+    .progress-bar {
+        width: 100%;
+        background-color: #EB355F;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
+    }
+    
+    .progress-bar-fill {
+        display: block;
+        height: 22px;
+        background-color: #28B478;
+        
+        transition: width 500ms ease-in-out;
     }
 </style>
 
 <div class="align-left full-width background">
     <form on:submit|preventDefault={insertTodo}>
         <div class="custom-form input-group mb-3">
-            <input type="text" class=" mousetrap form-control" bind:value={insertText} bind:this={ref} on:focus={onFocus}/>
-            <button type="submit" class="btn btn-primary">Add</button>
+            <input type="text" class=" mousetrap form-control remove-radius" bind:value={insertText} bind:this={ref} on:focus={onFocus}/>
+            <button type="submit" class="btn btn-primary remove-radius">Add</button>
         </div>
     </form>
+    <div class="progress-bar">
+        <span class="progress-bar-fill" style="width: {state.percentComplete}%;"></span>
+    </div>
     {#if state.loading}
         <p>Loading todos</p>
     {:else}
