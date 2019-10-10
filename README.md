@@ -1,4 +1,4 @@
-![logo](https://github.com/oldtimerza/meerkat/logo.png)
+![Meerkat](https://raw.githubusercontent.com/oldtimerza/meerkat/master/logo.png)
 # Meerkat
 A simple keyboard driven, VIM-styled todo manager.
 
