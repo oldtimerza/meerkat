@@ -5,10 +5,10 @@ const path = require('path');
 const url = require('url');
 const Datastore = require('nedb-promises');
 
-let tray;
 let window;
 
-const todosdb = Datastore.create('./todos.db');
+const persist = process.env.NODE_ENV === 'production';
+const todosdb = persist ? Datastore.create('./todos.db') : Datastore.create();
 
 const createWindow = () => {
   window = new BrowserWindow({
@@ -73,36 +73,31 @@ const toggleWindow = () => {
   }
 };
 
-const contextMenu = Menu.buildFromTemplate([
-  {
-    label: 'Show App',
-    click() {
-      window.show();
-    },
-  },
-  {
-    label: 'Quit',
-    click() {
-      app.isQuiting = true;
-      app.quit();
-    },
-  },
-]);
-
-const createTray = () => {
-  tray = new Tray(path.join(__dirname, 'icon.png'));
-  tray.setContextMenu(contextMenu);
-  tray.on('double-click', toggleWindow);
-};
 
 app.on('ready', () => {
-  createTray();
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show App',
+      click() {
+        window.show();
+      },
+    },
+    {
+      label: 'Quit',
+      click() {
+        app.isQuiting = true;
+        app.quit();
+      },
+    },
+  ]);
+
+  const tray = new Tray(path.join(__dirname, 'icon.png'));
+  tray.setContextMenu(contextMenu);
+  tray.on('double-click', toggleWindow);
   createWindow();
 
 
-  globalShortcut.register('Alt+Space', () => {
-    toggleWindow();
-  });
+  globalShortcut.register('Alt+Space', toggleWindow);
 });
 
 app.on('window-all-closed', () => {

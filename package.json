@@ -9,7 +9,8 @@
   "scripts": {
     "package": "electron-packager . meerkat --out=./packages",
     "bundle": "gulp",
-    "start": "yarn bundle && electron .",
+    "start": "set NODE_ENV=production&&yarn bundle&&electron .",
+    "test": "set NODE_ENV=development&&yarn bundle&&mocha",
     "lint": "eslint"
   },
   "devDependencies": {
@@ -18,7 +19,6 @@
     "babel-cli": "^6.26.0",
     "babelify": "^10.0.0",
     "browserify": "^16.5.0",
-    "electron": "^6.0.10",
     "electron-packager": "^14.0.6",
     "eslint": "^6.4.0",
     "eslint-config-airbnb-base": "^14.0.0",
@@ -26,6 +26,8 @@
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-concat": "^2.6.1",
+    "mocha": "^6.2.1",
+    "spectron": "^8.0.0",
     "svelte": "3",
     "sveltify": "3",
     "vinyl-source-stream": "^2.0.0"
@@ -36,6 +38,7 @@
     ]
   },
   "dependencies": {
+    "electron": "^6.0.10",
     "nedb": "^1.8.0",
     "nedb-promises": "^4.0.0"
   }

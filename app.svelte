@@ -251,32 +251,32 @@
 
 <div class="align-left full-width background">
     <form on:submit|preventDefault={insertTodo}>
-        <div class="custom-form input-group mb-3">
-            <input type="text" class=" mousetrap form-control remove-radius" bind:value={insertText} bind:this={ref} on:focus={onFocus}/>
-            <button type="submit" class="btn btn-primary remove-radius">Add</button>
+        <div class="custom-form input-group mb-3" >
+            <input type="text" class=" mousetrap form-control remove-radius" id="todo-input" bind:value={insertText} bind:this={ref} on:focus={onFocus}/>
+            <button type="submit" class="btn btn-primary remove-radius" id="todo-add-button">Add</button>
         </div>
     </form>
-    <div class="progress-bar">
-        <span class="progress-bar-fill" style="width: {state.percentComplete}%;"></span>
+    <div class="progress-bar" id="progress-bar">
+        <span class="progress-bar-fill" id="progress-bar-fill" style="width: {state.percentComplete}%;"></span>
     </div>
     {#if state.loading}
         <p>Loading todos</p>
     {:else}
     <div class="container-fluid">
         {#each state.todos as todo, index}
-        <div class="custom-row row {index == state.activeTodoIndex?  ' active' : ''}">
+        <div class="custom-row row {index == state.activeTodoIndex?  ' active' : ''}" id="todo-{index}">
             <div class= "checkbox-container col-2">
                 {#if todo.done}
-                    <div class="custom-check done">
+                    <div class="custom-check done" id="todo-done-{index}">
                         ✔️
                     </div>
                 {:else}
-                    <div class="custom-check not-done">
+                    <div class="custom-check not-done" id="todo-undone-{index}">
                         ❌
                     </div>
                 {/if}
             </div>
-            <div class="description col-10">
+            <div class="description col-10" id="todo-descr-{index}">
                 {todo.text}
             </div>
         </div>
