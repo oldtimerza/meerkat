@@ -35,5 +35,15 @@ describe('Application launch', function () {
 
     const description = await app.client.getText('#todo-descr-0');
     assert.equal(description, inputValue, 'todo should have correct description');
+
+    await app.client.keys('escape');
+
+    await app.client.keys(['d', 'd']);
+
+    app.client.waitForExist('#todo-0', 100)
+      .then(() => assert.fail('No todo should be found after deletion'))
+      .catch((error) => {
+        assert.equal(error.type, 'WaitUntilTimeoutError', 'expected there to be no todo');
+      });
   });
 });
