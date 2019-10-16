@@ -5,7 +5,7 @@ const sveltify = require('sveltify');
 const source = require('vinyl-source-stream');
 
 exports.default = function () {
-  return browserify('./app.js')
+  return browserify('./src/app.js')
     .transform(sveltify, { extensions: ['.svelte'] })
     .transform(babelify, { presets: ['@babel/preset-env'] })
     .bundle()
