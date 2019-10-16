@@ -27,7 +27,7 @@
         loading: true,
         todos: [],
         activeTodoIndex: 0,
-        percentComplete: 0
+        percentComplete: 0,
     }
 
     function determineActionFromMode({doInNav, doInEdit, doInInsert}){
@@ -54,6 +54,10 @@
 
     function changeMode(newMode){
         currentMode = newMode
+    }
+
+    function toggleInputForm(){
+        return currentMode == modes.INSERT
     }
 
     function enterInsertMode(event){
@@ -168,8 +172,9 @@
 
 <style>
     .background {
-        background-color: #22096A;
+        background-color: #292A2B;
         height: 100%;
+        overflow: auto;
     }
 
     .custom-form {
@@ -219,15 +224,19 @@
     }
 
     .done {
-        background: #00AF64;
+        background: #19F9D8;
     }
 
     .not-done{
-        background: #EA0037;
+        background: #FF2C6D;
     }
 
     .active {
-        background: #3C13AF;
+        background: #7d8082;
+    }
+
+    .active .description{
+        color: #FFB86C;
     }
 
     .remove-radius {
@@ -236,31 +245,31 @@
 
     .progress-bar {
         width: 100%;
-        background-color: #EB355F;
+        background-color: #e60045;
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
     }
     
     .progress-bar-fill {
         display: block;
         height: 22px;
-        background-color: #28B478;
+        background-color: #05c7aa;
         
         transition: width 500ms ease-in-out;
     }
 </style>
 
 <div class="align-left full-width background">
+    <div class="progress-bar" id="progress-bar">
+        <span class="progress-bar-fill" id="progress-bar-fill" style="width: {state.percentComplete}%;"></span>
+    </div>
     <form on:submit|preventDefault={insertTodo}>
         <div class="custom-form input-group mb-3" >
             <input type="text" class=" mousetrap form-control remove-radius" id="todo-input" bind:value={insertText} bind:this={ref} on:focus={onFocus}/>
             <button type="submit" class="btn btn-primary remove-radius" id="todo-add-button">Add</button>
         </div>
     </form>
-    <div class="progress-bar" id="progress-bar">
-        <span class="progress-bar-fill" id="progress-bar-fill" style="width: {state.percentComplete}%;"></span>
-    </div>
     {#if state.loading}
-        <p>Loading todos</p>
+        <p>...</p>
     {:else}
     <div class="container-fluid">
         {#each state.todos as todo, index}
