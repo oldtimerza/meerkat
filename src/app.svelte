@@ -256,13 +256,22 @@
         
         transition: width 500ms ease-in-out;
     }
+
+    .hidden-form {
+        opacity: 0;
+        height: 0px;
+    }
+
+    .visible-form {
+        opacity: 100;
+    }
 </style>
 
 <div class="align-left full-width background">
     <div class="progress-bar" id="progress-bar">
         <span class="progress-bar-fill" id="progress-bar-fill" style="width: {state.percentComplete}%;"></span>
     </div>
-    <form on:submit|preventDefault={insertTodo}>
+    <form class="{currentMode == modes.NAVIGATE? 'hidden-form' : 'visible-form'}" on:submit|preventDefault={insertTodo}>
         <div class="custom-form input-group mb-3" >
             <input type="text" class=" mousetrap form-control remove-radius" id="todo-input" bind:value={insertText} bind:this={ref} on:focus={onFocus}/>
             <button type="submit" class="btn btn-primary remove-radius" id="todo-add-button">Add</button>

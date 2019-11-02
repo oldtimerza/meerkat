@@ -46,4 +46,19 @@ describe('Application launch', function () {
         assert.equal(error.type, 'WaitUntilTimeoutError', 'expected there to be no todo');
       });
   });
+
+  it('should hide input form when in Navigation mode', async () => {
+    const form = await app.client.element('.hidden-form');
+
+    assert.notEqual(form, null, 'expected the form to have class hidden-form');
+  });
+
+
+  it('should show input form when in Insert mode', async () => {
+    await app.client.keys('i');
+
+    const form = await app.client.element('.visible-form');
+
+    assert.notEqual(form, null, 'expected the form to have class visible-form');
+  });
 });
