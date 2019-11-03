@@ -17,13 +17,12 @@
         INSERT: "INSERT"
     }
 
-    let currentMode = modes.NAVIGATE
-
     let insertText = ""
 
     let ref
 
     let state = {
+        currentMode: modes.NAVIGATE,
         loading: true,
         todos: [],
         activeTodoIndex: 0,
@@ -31,15 +30,15 @@
     }
 
     function determineActionFromMode({doInNav, doInEdit, doInInsert}){
-        if(currentMode == modes.NAVIGATE){
+        if(state.currentMode == modes.NAVIGATE){
             doInNav()
         }
 
-        if(currentMode == modes.EDIT){
+        if(state.currentMode == modes.EDIT){
             doInEdit()
         }
 
-        if(currentMode == modes.INSERT){
+        if(state.currentMode == modes.INSERT){
             doInInsert()
         }
     }
@@ -53,11 +52,11 @@
     const createTodo = (text, done = false) => ({text, done, created: new Date()});
 
     function changeMode(newMode){
-        currentMode = newMode
+        state.currentMode = newMode
     }
 
     function toggleInputForm(){
-        return currentMode == modes.INSERT
+        return state.currentMode == modes.INSERT
     }
 
     function enterInsertMode(event){
@@ -271,7 +270,7 @@
     <div class="progress-bar" id="progress-bar">
         <span class="progress-bar-fill" id="progress-bar-fill" style="width: {state.percentComplete}%;"></span>
     </div>
-    <form class="{currentMode == modes.NAVIGATE? 'hidden-form' : 'visible-form'}" on:submit|preventDefault={insertTodo}>
+    <form class="{state.currentMode == modes.NAVIGATE? 'hidden-form' : 'visible-form'}" on:submit|preventDefault={insertTodo}>
         <div class="custom-form input-group mb-3" >
             <input type="text" class=" mousetrap form-control remove-radius" id="todo-input" bind:value={insertText} bind:this={ref} on:focus={onFocus}/>
             <button type="submit" class="btn btn-primary remove-radius" id="todo-add-button">Add</button>
