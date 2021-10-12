@@ -38,7 +38,7 @@
     ]
   },
   "dependencies": {
-    "electron": "^6.0.10",
+    "electron": "^11.5.0",
     "nedb": "^1.8.0",
     "nedb-promises": "^4.0.0"
   }
